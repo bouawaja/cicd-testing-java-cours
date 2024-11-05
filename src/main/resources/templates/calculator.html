@@ -24,43 +24,35 @@
         <h2>
 
             <form action="#" th:action="@{/calculator}" th:object="${calculation}" method="post">
+                <!-- Display for results -->
+                <div class="result-display">
+                    <span id="solution" th:text="${response.getSolution()}">Solution</span>
+                </div>
+
+                <!-- Number and operation buttons -->
                 <div class="row">
-                    <div class="col">&nbsp;</div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">7</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">8</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">9</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-warning btn-calc">÷</button></div>
                 </div>
                 <div class="row">
-                    <div class="col">
-                        <input type="text" th:field="*{leftArgument}" class="form-control" placeholder="First Value">
-                    </div>
-                    <div class="col">
-                        <select th:field="*{calculationType}" class="form-control form-control-lg">
-                            <option value="ADDITION" selected="true"> + </option>
-                            <option value="SUBTRACTION" selected="true"> - </option>
-                            <option value="MULTIPLICATION"> x </option>
-                            <option value="DIVISION"> / </option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <input type="text" th:field="*{rightArgument}" class="form-control" placeholder="Second Value">
-                    </div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">4</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">5</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">6</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-warning btn-calc">×</button></div>
                 </div>
                 <div class="row">
-                    <div class="col">
-                        <button type="submit" class="btn btn-primary">=</button>
-
-                    </div>
-                    <div class="text-danger validation-summary-valid" data-valmsg-summary="true">
-                        <ul id="errors" th:if="${#fields.hasErrors('*')}">
-                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                        </ul>
-                    </div>
-                    <div class="col">
-                        <ul th:if="${response}">
-                            <span id="solution" th:text="${response.getSolution()}" class="badge">
-                                Solution
-                            </span>
-                        </ul>
-                    </div>
-
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">1</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">2</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">3</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-warning btn-calc">-</button></div>
+                </div>
+                <div class="row">
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">0</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-light btn-calc">.</button></div>
+                    <div class="col-3"><button type="submit" class="btn btn-primary btn-calc">=</button></div>
+                    <div class="col-3"><button type="button" class="btn btn-warning btn-calc">+</button></div>
                 </div>
             </form>
 
