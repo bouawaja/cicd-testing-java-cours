@@ -2,7 +2,7 @@ def ENV_NAME = getEnvName(env.BRANCH_NAME)
 def CONTAINER_NAME = "calculator-" +ENV_NAME
 def CONTAINER_TAG = getTag(env.BUILD_NUMBER, env.BRANCH_NAME)
 def HTTP_PORT = getHTTPPort(env.BRANCH_NAME)
-def EMAIL_RECIPIENTS = "bouawajaabid@gmail.com"
+def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 
 
 node {
@@ -50,7 +50,7 @@ node {
 
         stage('Run App') {
             withCredentials([usernamePassword(credentialsId: 'DockerhubCredentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                runApp(CONTAINER_NAME, CONTAINER_TAG, USERNAME, HTTP_PORT, ENV_NAME,  USERNAME, PASSWORD)
+                runApp(CONTAINER_NAME, CONTAINER_TAG, USERNAME, HTTP_PORT, ENV_NAME)
 
             }
         }
@@ -82,8 +82,8 @@ def pushToImage(containerName, tag, dockerUser, dockerPassword) {
     echo "Image push complete"
 }
 
-def runApp(containerName, tag, dockerHubUser, httpPort, envName, dockerUser, dockerPassword) {
-    sh "docker login -u $dockerUser -p $dockerPassword"
+def runApp(containerName, tag, dockerHubUser, httpPort, envName) {
+    echo "docker pull $dockerHubUser/$containerName:$tag"
     sh "docker pull $dockerHubUser/$containerName:$tag"
     sh "docker run --rm --env SPRING_ACTIVE_PROFILES=$envName -d -p $httpPort:$httpPort --name $containerName $dockerHubUser/$containerName:$tag"
     echo "Application started on port: ${httpPort} (http)"
