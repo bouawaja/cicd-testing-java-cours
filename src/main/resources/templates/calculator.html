@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Calculateur Open Calculator</title>
-    <link rel="stylesheet" th:href="@{webjars/bootstrap/4.3.1/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
         .calculator-container {
             max-width: 400px;
@@ -37,22 +37,33 @@
     <div class="calculator-container">
         <h1 class="text-center">Open Calculator</h1>
 
-        <form action="#" th:action="@{/calculator}" th:object="${calculation}" method="post">
+        <form id="calcForm" action="#" method="post">
+            <!-- Result Display -->
             <div class="form-group">
-                <input type="text" th:field="*{leftArgument}" id="leftArgument" class="form-control input-field" placeholder="First Value">
+                <input type="text" id="result" class="form-control input-field" placeholder="Result" readonly>
+            </div>
+
+            <!-- Fields for left argument, operator, and right argument -->
+            <div class="form-group">
+                <input type="text" id="leftArgument" class="form-control input-field" placeholder="First Value" name="leftArgument">
             </div>
 
             <div class="form-group">
-                <select th:field="*{calculationType}" id="operationType" class="form-control form-control-lg">
-                    <option value="ADDITION" selected="true"> + </option>
-                    <option value="SUBTRACTION"> - </option>
-                    <option value="MULTIPLICATION"> × </option>
-                    <option value="DIVISION"> ÷ </option>
+                <select id="operationType" class="form-control form-control-lg">
+                    <option value="ADDITION">+</option>
+                    <option value="SUBTRACTION">-</option>
+                    <option value="MULTIPLICATION">×</option>
+                    <option value="DIVISION">÷</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <input type="text" th:field="*{rightArgument}" id="rightArgument" class="form-control input-field" placeholder="Second Value">
+                <input type="text" id="rightArgument" class="form-control input-field" placeholder="Second Value" name="rightArgument">
+            </div>
+
+            <!-- Equals Button -->
+            <div class="form-group text-center">
+                <button type="button" onclick="calculateResult()" class="btn btn-primary btn-lg">=</button>
             </div>
 
             <!-- Numpad for entering values -->
@@ -75,34 +86,68 @@
                 <div class="row">
                     <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('0')">0</button></div>
                     <div class="col-4"><button type="button" class="btn btn-secondary btn-calc" onclick="clearInput()">C</button></div>
-                    <div class="col-4"><button type="submit" class="btn btn-primary btn-calc">=</button></div>
                 </div>
             </div>
         </form>
-
     </div>
-
 </main>
 
 <script>
     let activeInput = "leftArgument";
 
-    // Function to append number to active input field
+    // Append number to active input field
     function appendToInput(number) {
         const input = document.getElementById(activeInput);
         input.value += number;
     }
 
-    // Toggle between leftArgument and rightArgument based on click
+    // Toggle active input between leftArgument and rightArgument based on click
     document.getElementById("leftArgument").addEventListener("focus", () => activeInput = "leftArgument");
     document.getElementById("rightArgument").addEventListener("focus", () => activeInput = "rightArgument");
 
-    // Function to clear the active input field
+    // Clear active input field
     function clearInput() {
         document.getElementById(activeInput).value = "";
     }
+
+    // Perform calculation and display result
+    function calculateResult() {
+        const leftArg = parseFloat(document.getElementById("leftArgument").value);
+        const rightArg = parseFloat(document.getElementById("rightArgument").value);
+        const operation = document.getElementById("operationType").value;
+        let result;
+
+        if (isNaN(leftArg) || isNaN(rightArg)) {
+            alert("Veuillez entrer des valeurs numériques valides dans les deux champs.");
+            return;
+        }
+
+        switch (operation) {
+            case "ADDITION":
+                result = leftArg + rightArg;
+                break;
+            case "SUBTRACTION":
+                result = leftArg - rightArg;
+                break;
+            case "MULTIPLICATION":
+                result = leftArg * rightArg;
+                break;
+            case "DIVISION":
+                if (rightArg === 0) {
+                    alert("La division par zéro n'est pas autorisée.");
+                    return;
+                }
+                result = leftArg / rightArg;
+                break;
+            default:
+                result = "Erreur";
+        }
+
+        document.getElementById("result").value = result;
+    }
 </script>
 
-<script type="text/javascript" th:src="@{webjars/bootstrap/4.3.1/js/bootstrap.min.js}"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
