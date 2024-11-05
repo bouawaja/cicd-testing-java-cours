@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -37,19 +37,22 @@
     <div class="calculator-container">
         <h1 class="text-center">Open Calculator</h1>
 
-        <form id="calcForm" action="#" method="post">
+        <form id="calcForm"  action="#" th:action="@{/calculator}" th:object="${calculation}" method="post">
             <!-- Result Display -->
-            <div class="form-group">
-                <input type="text" id="result" class="form-control input-field" placeholder="Result" readonly>
-            </div>
+                <div class="form-group text-center">
+                    <ul th:if="${response}">
+                        <span id="solution" th:text="${response.getSolution()}" class="badge result-display">Solution</span>
+                    </ul>
+                </div>
+
 
             <!-- Fields for left argument, operator, and right argument -->
             <div class="form-group">
-                <input type="text" id="leftArgument" class="form-control input-field" placeholder="First Value" name="leftArgument">
+                <input type="text" th:field="*{leftArgument}"  id="leftArgument" class="form-control input-field" placeholder="First Value" name="leftArgument">
             </div>
 
             <div class="form-group">
-                <select id="operationType" class="form-control form-control-lg">
+                <select  th:field="*{calculationType}" id="operationType" class="form-control form-control-lg">
                     <option value="ADDITION">+</option>
                     <option value="SUBTRACTION">-</option>
                     <option value="MULTIPLICATION">×</option>
@@ -58,12 +61,12 @@
             </div>
 
             <div class="form-group">
-                <input type="text" id="rightArgument" class="form-control input-field" placeholder="Second Value" name="rightArgument">
+                <input type="text" th:field="*{rightArgument}"  id="rightArgument" class="form-control input-field" placeholder="Second Value" name="rightArgument">
             </div>
 
             <!-- Equals Button -->
             <div class="form-group text-center">
-                <button type="button" onclick="calculateResult()" class="btn btn-primary btn-lg">=</button>
+                <button type="submit" onclick="calculateResult()"  class="btn btn-primary btn-lg">=</button>
             </div>
 
             <!-- Numpad for entering values -->
