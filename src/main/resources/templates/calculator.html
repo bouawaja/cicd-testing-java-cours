@@ -3,73 +3,155 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <title>Calculateur du cours de tests OpenClassrooms</title>
-
-    <link rel="stylesheet" th:href="@{webjars/bootstrap/4.3.1/css/bootstrap.min.css}"/>
-
+    <title>Calculateur Open Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .calculator-container {
+            max-width: 400px;
+            margin-top: 80px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        .input-field {
+            font-size: 1.2em;
+            text-align: right;
+        }
+        .btn-calc {
+            font-size: 1.2em;
+            width: 100%;
+            height: 60px;
+        }
+    </style>
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="#"> The Open Calculator</a>
+<nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
+    <a class="navbar-brand" href="#">Calculator Page</a>
 </nav>
 
-<main role="main" class="container">
+<main role="main" class="container d-flex justify-content-center">
 
-    <div class="starter-template">
-        <h1>Open Calculator</h1>
-        <h2>
+    <div class="calculator-container">
+        <h1 class="text-center">Calculator</h1>
 
-            <form action="#" th:action="@{/calculator}" th:object="${calculation}" method="post">
+        <form id="calcForm"  action="#" th:action="@{/calculator}" th:object="${calculation}" method="post">
+            <!-- Result Display -->
+                <div class="form-group text-center">
+                    <ul th:if="${response}">
+                        <span id="solution" th:text="${response.getSolution()}" class="badge result-display">Solution</span>
+                    </ul>
+                </div>
+
+
+            <!-- Fields for left argument, operator, and right argument -->
+            <div class="form-group">
+                <input type="text" th:field="*{leftArgument}"  id="leftArgument" class="form-control input-field" placeholder="First Value" name="leftArgument">
+            </div>
+
+            <div class="form-group">
+                <select  th:field="*{calculationType}" id="operationType" class="form-control"
+                  style="width: auto; color: green; text-align: left; font-weight: bold">
+                    <option value="ADDITION" selected>+</option>
+                    <option value="SUBTRACTION">-</option>
+                    <option value="MULTIPLICATION">×</option>
+                    <option value="DIVISION">÷</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <input type="text" th:field="*{rightArgument}"  id="rightArgument" class="form-control input-field" placeholder="Second Value" name="rightArgument">
+            </div>
+
+            <!-- Equals Button -->
+            <div class="form-group text-center">
+                <button type="submit" onclick="calculateResult()"  class="btn btn-primary btn-lg">=</button>
+            </div>
+
+            <!-- Numpad for entering values -->
+            <div class="text-center">
                 <div class="row">
-                    <div class="col">&nbsp;</div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('7')">7</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('8')">8</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('9')">9</button></div>
                 </div>
                 <div class="row">
-                    <div class="col">
-                        <input type="text" th:field="*{leftArgument}" class="form-control" placeholder="First Value">
-                    </div>
-                    <div class="col">
-                        <select th:field="*{calculationType}" class="form-control form-control-lg">
-                            <option value="ADDITION" selected="true"> + </option>
-                            <option value="SUBTRACTION" selected="true"> - </option>
-                            <option value="MULTIPLICATION"> x </option>
-                            <option value="DIVISION"> / </option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <input type="text" th:field="*{rightArgument}" class="form-control" placeholder="Second Value">
-                    </div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('4')">4</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('5')">5</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('6')">6</button></div>
                 </div>
                 <div class="row">
-                    <div class="col">
-                        <button type="submit" class="btn btn-primary">=</button>
-
-                    </div>
-                    <div class="text-danger validation-summary-valid" data-valmsg-summary="true">
-                        <ul id="errors" th:if="${#fields.hasErrors('*')}">
-                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                        </ul>
-                    </div>
-                    <div class="col">
-                        <ul th:if="${response}">
-                            <span id="solution" th:text="${response.getSolution()}" class="badge">
-                                Solution
-                            </span>
-                        </ul>
-                    </div>
-
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('1')">1</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('2')">2</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('3')">3</button></div>
                 </div>
-            </form>
-
-        </h2>
+                <div class="row">
+                    <div class="col-4"><button type="button" class="btn btn-light btn-calc" onclick="appendToInput('0')">0</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-secondary btn-calc" onclick="clearInput()">C</button></div>
+                </div>
+            </div>
+        </form>
     </div>
-
-
 </main>
-<!-- /.container -->
 
-<script type="text/javascript" th:src="@{webjars/bootstrap/4.3.1/js/bootstrap.min.js}"></script>
+<script>
+    let activeInput = "leftArgument";
+
+    // Append number to active input field
+    function appendToInput(number) {
+        const input = document.getElementById(activeInput);
+        input.value += number;
+    }
+
+    // Toggle active input between leftArgument and rightArgument based on click
+    document.getElementById("leftArgument").addEventListener("focus", () => activeInput = "leftArgument");
+    document.getElementById("rightArgument").addEventListener("focus", () => activeInput = "rightArgument");
+
+    // Clear active input field
+    function clearInput() {
+        document.getElementById(activeInput).value = "";
+    }
+
+    // Perform calculation and display result
+    function calculateResult() {
+        const leftArg = parseFloat(document.getElementById("leftArgument").value);
+        const rightArg = parseFloat(document.getElementById("rightArgument").value);
+        const operation = document.getElementById("operationType").value;
+        let result;
+
+        if (isNaN(leftArg) || isNaN(rightArg)) {
+            alert("Veuillez entrer des valeurs numériques valides dans les deux champs.");
+            return;
+        }
+
+        switch (operation) {
+            case "ADDITION":
+                result = leftArg + rightArg;
+                break;
+            case "SUBTRACTION":
+                result = leftArg - rightArg;
+                break;
+            case "MULTIPLICATION":
+                result = leftArg * rightArg;
+                break;
+            case "DIVISION":
+                if (rightArg === 0) {
+                    alert("La division par zéro n'est pas autorisée.");
+                    return;
+                }
+                result = leftArg / rightArg;
+                break;
+            default:
+                result = "Erreur";
+        }
+
+        document.getElementById("result").value = result;
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
