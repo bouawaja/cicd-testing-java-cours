@@ -29,13 +29,13 @@
 <body>
 
 <nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
-    <a class="navbar-brand" href="#">The Open Calculator</a>
+    <a class="navbar-brand" href="#">Calculator Page</a>
 </nav>
 
 <main role="main" class="container d-flex justify-content-center">
 
     <div class="calculator-container">
-        <h1 class="text-center">Open Calculator</h1>
+        <h1 class="text-center">Calculator</h1>
 
         <form id="calcForm"  action="#" th:action="@{/calculator}" th:object="${calculation}" method="post">
             <!-- Result Display -->
@@ -52,8 +52,9 @@
             </div>
 
             <div class="form-group">
-                <select  th:field="*{calculationType}" id="operationType" class="form-control form-control-lg">
-                    <option value="ADDITION">+</option>
+                <select  th:field="*{calculationType}" id="operationType" class="form-control"
+                  style="width: auto; color: green; text-align: left; font-weight: bold">
+                    <option value="ADDITION" selected>+</option>
                     <option value="SUBTRACTION">-</option>
                     <option value="MULTIPLICATION">×</option>
                     <option value="DIVISION">÷</option>

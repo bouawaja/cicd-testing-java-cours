@@ -100,7 +100,7 @@ String getEnvName(String branchName) {
     if (branchName == 'master') {
         return 'prod'
     }
-    return (branchName == 'develop') ? 'uat' : 'dev'
+    return (branchName == 'develop') ? 'preprod' : 'dev'
 }
 
 String getHTTPPort(String branchName) {
