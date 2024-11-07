@@ -1,10 +1,14 @@
 def ENV_NAME = getEnvName(env.BRANCH_NAME)
-def CONTAINER_NAME = "calculator-" +ENV_NAME
+def CONTAINER_NAME = "calculator-" + ENV_NAME
 def CONTAINER_TAG = getTag(env.BUILD_NUMBER, env.BRANCH_NAME)
 def HTTP_PORT = getHTTPPort(env.BRANCH_NAME)
-def NEXUSURL = 'localhost:5000/my-docker-repository'
+def NEXUS_URL = 'http://localhost:8081/repository/maven-releases/'
 def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
-
+def GROUP_ID = "tech/zerofiltre/testing"
+def ARTIFACT_ID = "calculator"
+def VERSION = "1.0.0"
+def FILE_NAME = "${ARTIFACT_ID}-${VERSION}.jar"
+def FILE_PATH = "target/${CONTAINER_NAME}"
 
 node {
     try {
@@ -19,16 +23,15 @@ node {
         }
 
         stage('Build with test') {
-
             sh "mvn clean install"
         }
 
         stage('Sonarqube Analysis') {
             withSonarQubeEnv('SonarQubeLocalServer') {
-                sh " mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
+                sh "mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
             }
             timeout(time: 1, unit: 'MINUTES') {
-                def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
+                def qg = waitForQualityGate()
                 if (qg.status != 'OK') {
                     error "Pipeline aborted due to quality gate failure: ${qg.status}"
                 }
@@ -43,24 +46,21 @@ node {
             imageBuild(CONTAINER_NAME, CONTAINER_TAG)
         }
 
-        stage('Push to nexus Registry') {
+    /*    stage('Push Docker Image to Nexus') {
             withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                 pushToImageToNexus(CONTAINER_NAME, CONTAINER_TAG, USERNAME, PASSWORD, NEXUSURL)
             }
-        }
-
-    /*    stage('Run App') {
-            withCredentials([usernamePassword(credentialsId: 'dockerhubcrendential', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                runApp(CONTAINER_NAME, CONTAINER_TAG, USERNAME, HTTP_PORT, ENV_NAME)
-
-            }
         }*/
+
+        stage('Upload JAR to Nexus') {
+
+            uploadToNexusJar()
+        }
 
     } finally {
         deleteDir()
         //sendEmail(EMAIL_RECIPIENTS);
     }
-
 }
 
 def imagePrune(containerName) {
@@ -76,30 +76,20 @@ def imageBuild(containerName, tag) {
     echo "Image build complete"
 }
 
-def pushToImage(containerName, tag, dockerUser, dockerPassword) {
-    sh "docker login -u $dockerUser -p $dockerPassword"
-    sh "docker tag $containerName:$tag $dockerUser/$containerName:$tag"
-    sh "docker push $dockerUser/$containerName:$tag"
-    echo "Image push complete"
-}
-
 def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     sh "docker tag $containerName:$tag $nexusUrl/$containerName:$tag"
-    sh "docker login localhost:5000  -u $nexusUser -p $nexusPassword"
+    sh "docker login localhost:5000 -u $nexusUser -p $nexusPassword"
     sh "docker push $nexusUrl/$containerName:$tag"
-    echo "Image push complete"
+    echo "Image push to Nexus complete"
 }
 
-def checkPackage(containerName, tag, dockerHubUser, httpPort, envName) {
-    sh "docker pull $dockerHubUser/$containerName:$tag"
-    echo "Application started on port: ${httpPort} (http)"
-}
-
-def runApp(containerName, tag, dockerHubUser, httpPort, envName) {
-    echo "docker pull $dockerHubUser/$containerName:$tag"
-    sh "docker pull $dockerHubUser/$containerName:$tag"
-    sh "docker run --rm --env SPRING_ACTIVE_PROFILES=$envName -d -p $httpPort:$httpPort --name $containerName $dockerHubUser/$containerName:$tag"
-    echo "Application started on port: ${httpPort} (http)"
+def uploadToNexusJar() {
+    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+        sh """
+            curl -u $NEXUS_USER:$NEXUS_PASS --upload-file $FILE_PATH \
+            "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ARTIFACT_ID}/${VERSION}/$FILE_NAME"
+        """
+    }
 }
 
 def sendEmail(recipients) {
