@@ -7,7 +7,7 @@ def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "1.0.0"
-def FILE_NAME = "${ARTIFACT_ID}-${VERSION}.jar"
+def FILE_NAME = "${ARTIFACT_ID}.jar"
 def FILE_PATH = "target/${FILE_NAME}"
 
 node {
