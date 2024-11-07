@@ -2,12 +2,12 @@ def ENV_NAME = getEnvName(env.BRANCH_NAME)
 def CONTAINER_NAME = "calculator-" + ENV_NAME
 def CONTAINER_TAG = getTag(env.BUILD_NUMBER, env.BRANCH_NAME)
 def HTTP_PORT = getHTTPPort(env.BRANCH_NAME)
-def NEXUS_URL = 'http://localhost:8081/repository/my-project-release/'
+def NEXUS_URL = 'http://localhost:8081/repository/my-project-release'
 def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
-def VERSION = "1.0.0"
-def FILE_NAME = "${ARTIFACT_ID}.jar"
+def VERSION = "0.0.1"
+def FILE_NAME = "${ARTIFACT_ID}-${VERSION}-SNAPSHOT.jar"
 def FILE_PATH = "target/${FILE_NAME}"
 node {
     try {
@@ -24,7 +24,10 @@ node {
         stage('Build with test') {
             sh "mvn clean install"
         }
-
+        stage('Get Artifact Path') {
+                def JAR_FILE_PATH = "${env.WORKSPACE}/target/${FILE_NAME}"
+                echo "Path to JAR file: ${JAR_FILE_PATH}"
+            }
         stage('Sonarqube Analysis') {
             withSonarQubeEnv('SonarQubeLocalServer') {
                 sh "mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
@@ -53,7 +56,7 @@ node {
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-          uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PATH, VERSION, ENV_NAME)
+          uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, JAR_FILE_PATH, VERSION, ENV_NAME)
             }
         }
 
