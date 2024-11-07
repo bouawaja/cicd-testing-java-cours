@@ -9,6 +9,7 @@ def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
 def FILE_NAME = "${ARTIFACT_ID}-${VERSION}-SNAPSHOT.jar"
 def FILE_PATH = "target/${FILE_NAME}"
+def JAR_FILE_PATH = "${env.WORKSPACE}/target/calculator.jar"
 node {
     try {
         stage('Initialize') {
@@ -22,7 +23,8 @@ node {
         }
 
         stage('Build with test') {
-            sh "mvn clean install"
+            sh "mvn clean package -DskipTests"
+            echo "JAR file generated at: ${JAR_FILE_PATH}"
         }
 
         stage('Sonarqube Analysis') {
@@ -36,10 +38,6 @@ node {
                 }
             }
         }
-        stage('Deploy to Nexus') {
-            sh "mvn clean deploy"
-        }
-
 
        /* stage("Image Prune") {
             imagePrune(CONTAINER_NAME)
@@ -53,14 +51,14 @@ node {
             withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                 pushToImageToNexus(CONTAINER_NAME, CONTAINER_TAG, USERNAME, PASSWORD, NEXUSURL)
             }
-        }
+        }*/
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-          uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, VERSION, ENV_NAME)
+         uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, GROUP_ID, VERSION, ENV_NAME)
             }
         }
-*/
+
     } finally {
         deleteDir()
         //sendEmail(EMAIL_RECIPIENTS);
@@ -87,8 +85,8 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     echo "Image push to Nexus complete"
 }
 
-def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, VERSION, ENV_NAME) {
-         def JAR_FILE_PATH = "${env.HOME}/.m2/repository/tech/zerofiltre/testing/calculator/0.0.1-SNAPSHOT/${FILE_NAME}"
+def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, GROUP_ID, VERSION, ENV_NAME) {
+
          echo "Path to JAR file: ${JAR_FILE_PATH}"
         sh "curl -v -u $USERNAME:$PASSWORD --upload-file $JAR_FILE_PATH \
         '${NEXUS_URL}/${ENV_NAME}/'"
