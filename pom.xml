@@ -129,6 +129,14 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<altDeploymentRepository>local::default::file://${project.basedir}/target/repository</altDeploymentRepository>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
