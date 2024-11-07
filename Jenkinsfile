@@ -87,7 +87,7 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 }
 
 def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, VERSION, ENV_NAME) {
-         def JAR_FILE_PATH = sh(script: "find ${env.HOME}/.m2/repository/tech/zerofiltre/testing/calculator -name '*.jar' | tail -n 1", returnStdout: true).trim()
+         def JAR_FILE_PATH = "${env.HOME}/.m2/repository/tech/zerofiltre/testing/calculator/0.0.1-SNAPSHOT/${FILE_NAME}"
          echo "Path to JAR file: ${JAR_FILE_PATH}"
         sh "curl -v -u $USERNAME:$PASSWORD --upload-file $JAR_FILE_PATH \
         '${NEXUS_URL}/${ENV_NAME}/'"
