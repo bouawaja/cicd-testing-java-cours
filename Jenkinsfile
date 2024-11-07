@@ -2,15 +2,13 @@ def ENV_NAME = getEnvName(env.BRANCH_NAME)
 def CONTAINER_NAME = "calculator-" + ENV_NAME
 def CONTAINER_TAG = getTag(env.BUILD_NUMBER, env.BRANCH_NAME)
 def HTTP_PORT = getHTTPPort(env.BRANCH_NAME)
-def NEXUS_URL = 'http://localhost:8081/repository/maven-releases/'
+def NEXUS_URL = 'http://localhost:8081/repository/my-project-releases/'
 def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "1.0.0"
 def FILE_NAME = "${ARTIFACT_ID}.jar"
 def FILE_PATH = "target/${FILE_NAME}"
-def REPO_NAME = 'maven-releases'
-
 node {
     try {
         stage('Initialize') {
@@ -52,9 +50,6 @@ node {
                 pushToImageToNexus(CONTAINER_NAME, CONTAINER_TAG, USERNAME, PASSWORD, NEXUSURL)
             }
         }*/
-          stage('Check and Create Repo if Needed') {
-                    checkAndCreateRepo(NEXUS_URL, REPO_NAME, USERNAME, PASSWORD)
-                }
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
@@ -94,43 +89,6 @@ def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PAT
                  curl -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
                  "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ENV_NAME}/${VERSION}/${FILE_NAME}"
              """
-}
-
-def checkAndCreateRepo(NEXUS_URL, REPO_NAME, USERNAME, PASSWORD) {
-    // Vérifier si le dépôt existe
-    def repoExists = sh(script: """
-        curl -u $USERNAME:$PASSWORD -s -o /dev/null -w "%{http_code}" "$NEXUS_URL/service/rest/v1/repositories/$REPO_NAME"
-    """, returnStdout: true).trim()
-
-    // Si le dépôt n'existe pas (code HTTP 404), le créer
-    if (repoExists == "404") {
-        echo "Le dépôt $REPO_NAME n'existe pas. Création en cours..."
-
-        // Créer le dépôt (exemple pour un dépôt Maven hosted)
-        def createRepoResponse = sh(script: """
-            curl -u $USERNAME:$PASSWORD -X POST "$NEXUS_URL/service/rest/v1/repositories/maven/hosted" \
-            -H "Content-Type: application/json" \
-            -d '{
-                "name": "$REPO_NAME",
-                "online": true,
-                "storage": {
-                    "blobStoreName": "default",
-                    "strictContentTypeValidation": false
-                },
-                "maven": {
-                    "versionPolicy": "RELEASE",
-                    "layoutPolicy": "STRICT"
-                },
-                "cleanup": {
-                    "policyName": "none"
-                }
-            }'
-        """, returnStdout: true).trim()
-
-        echo "Réponse de la création du dépôt: $createRepoResponse"
-    } else {
-        echo "Le dépôt $REPO_NAME existe déjà."
-    }
 }
 
 
