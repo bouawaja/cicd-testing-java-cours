@@ -41,7 +41,8 @@ node {
                     def artifactId = 'calculator'
                     def version = '0.0.1-SNAPSHOT'
                     def packaging = 'jar'
-
+                     withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                                            echo "Pushing the package to Nexus..."
                     echo "Pushing the package to Nexus..."
 
                     sh """
