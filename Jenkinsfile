@@ -7,8 +7,8 @@ def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
-def FILE_NAME = "${ARTIFACT_ID}-${VERSION}-SNAPSHOT.jar"
-def FILE_PATH = "target/${FILE_NAME}"
+def FILE_NAME = "${ARTIFACT_ID}.jar"
+def JAR_FILE_PATH = "${env.WORKSPACE}/target/${FILE_NAME}"
 
 node {
     try {
@@ -23,7 +23,6 @@ node {
         }
 
         stage('Build with test') {
-        def JAR_FILE_PATH = "${env.WORKSPACE}/target/calculator.jar"
             sh "mvn clean package "
             echo "JAR file generated at: ${JAR_FILE_PATH}"
         }
@@ -56,7 +55,7 @@ node {
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-         uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, GROUP_ID, VERSION, ENV_NAME)
+         uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME)
             }
         }
 
@@ -86,10 +85,10 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     echo "Image push to Nexus complete"
 }
 
-def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, GROUP_ID, VERSION, ENV_NAME) {
+def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME) {
 
-         echo "Path to JAR file: ${JAR_FILE_PATH}"
-        sh "curl -v -u $USERNAME:$PASSWORD --upload-file $JAR_FILE_PATH \
+        echo "Path to JAR file: ${JAR_FILE_PATH}"
+        sh "curl -v -u $USERNAME:$PASSWORD --upload-file ${JAR_FILE_PATH} \
         '${NEXUS_URL}/${ENV_NAME}/'"
 
 }
