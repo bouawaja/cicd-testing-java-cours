@@ -86,8 +86,10 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 def uploadToNexusJar() {
      withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
         sh """
+         set +x
             curl -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
             "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ENV_NAME}/${VERSION}/${FILE_NAME}"
+         set -x
         """
     }
 }
