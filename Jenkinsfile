@@ -84,7 +84,7 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 }
 
 def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PATH, VERSION, ENV_NAME) {
-        sh "docker login ${NEXUS_URL} -u $nexusUser -p $nexusPassword"
+        sh "docker login ${NEXUS_URL} -u $USERNAME -p $PASSWORD"
          sh """
                  curl -v -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
                  "${NEXUS_URL}"
