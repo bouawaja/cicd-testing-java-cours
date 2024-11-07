@@ -24,7 +24,7 @@ node {
 
         stage('Build with test') {
             sh "mvn clean package "
-            echo "JAR file generated at: ${pwd()}/${JAR_FILE_PATH}"
+            echo "JAR file generated at: ${pwd()}${JAR_FILE_PATH}"
         }
 
         stage('Sonarqube Analysis') {
@@ -87,8 +87,8 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 
 def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME) {
 
-        echo "Path to JAR file: ${pwd()}/$JAR_FILE_PATH"
-        sh "curl -v -u $USERNAME:$PASSWORD --upload-file ${pwd()}/$JAR_FILE_PATH \
+        echo "Path to JAR file: ${pwd()}$JAR_FILE_PATH"
+        sh "curl -v -u $USERNAME:$PASSWORD --upload-file ${pwd()}$JAR_FILE_PATH \
         '${NEXUS_URL}/${ENV_NAME}/'"
 
 }
