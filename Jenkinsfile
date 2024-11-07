@@ -87,7 +87,7 @@ def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PAT
 
          sh """
                  curl -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
-                 "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ENV_NAME}/${VERSION}/${FILE_NAME}"
+                 "${NEXUS_URL}/${FILE_NAME}"
              """
 }
 
