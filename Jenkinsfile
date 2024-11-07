@@ -86,10 +86,10 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     echo "Image push to Nexus complete"
 }
 
-def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PATH, VERSION, ENV_NAME) {
+def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, JAR_FILE_PATH, VERSION, ENV_NAME) {
 
-        sh "curl -v -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
-        '${NEXUS_URL}/${ENV_NAME}'"
+        sh "curl -v -u $USERNAME:$PASSWORD --upload-file $JAR_FILE_PATH \
+        '${NEXUS_URL}/${ENV_NAME}/'"
 
 }
 
