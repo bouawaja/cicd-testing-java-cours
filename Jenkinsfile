@@ -2,7 +2,7 @@ def ENV_NAME = getEnvName(env.BRANCH_NAME)
 def CONTAINER_NAME = "calculator-" + ENV_NAME
 def CONTAINER_TAG = getTag(env.BUILD_NUMBER, env.BRANCH_NAME)
 def HTTP_PORT = getHTTPPort(env.BRANCH_NAME)
-def NEXUS_URL = 'http://localhost:5000/repository/my-project-release/'
+def NEXUS_URL = 'http://localhost:8081/repository/my-project-release/'
 def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
@@ -84,11 +84,10 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 }
 
 def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PATH, VERSION, ENV_NAME) {
-        sh "docker login ${NEXUS_URL} -u $USERNAME -p $PASSWORD"
-         sh """
-                 curl -v -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
-                 "${NEXUS_URL}"
-             """
+
+        sh "curl -v -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
+        '${NEXUS_URL}/${ENV_NAME}'"
+
 }
 
 
