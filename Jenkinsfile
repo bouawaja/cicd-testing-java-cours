@@ -24,10 +24,7 @@ node {
         stage('Build with test') {
             sh "mvn clean install"
         }
-        stage('Get Artifact Path') {
-          def JAR_FILE_PATH = "${env.WORKSPACE}/target/${FILE_NAME}"
-                echo "Path to JAR file: ${JAR_FILE_PATH}"
-            }
+
         stage('Sonarqube Analysis') {
             withSonarQubeEnv('SonarQubeLocalServer') {
                 sh "mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
@@ -39,6 +36,10 @@ node {
                 }
             }
         }
+        stage('Deploy to Nexus') {
+            sh "mvn clean deploy"
+        }
+
 
        /* stage("Image Prune") {
             imagePrune(CONTAINER_NAME)
@@ -52,14 +53,14 @@ node {
             withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                 pushToImageToNexus(CONTAINER_NAME, CONTAINER_TAG, USERNAME, PASSWORD, NEXUSURL)
             }
-        }*/
+        }
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
           uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, VERSION, ENV_NAME)
             }
         }
-
+*/
     } finally {
         deleteDir()
         //sendEmail(EMAIL_RECIPIENTS);

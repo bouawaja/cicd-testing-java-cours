@@ -129,14 +129,17 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<altDeploymentRepository>local::default::file://${project.basedir}/target/repository</altDeploymentRepository>
-				</configuration>
-			</plugin>
-
 		</plugins>
 	</build>
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<url>http://localhost:8081/repository/my-project-release/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<url>http://localhost:8081/repository/my-project-snapshot/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 </project>
