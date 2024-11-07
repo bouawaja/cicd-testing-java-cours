@@ -53,8 +53,8 @@ node {
             withCredentials([usernamePassword(credentialsId: 'dockerhubcrendential', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                 runApp(CONTAINER_NAME, CONTAINER_TAG, USERNAME, HTTP_PORT, ENV_NAME)
 
-            }*/
-        }
+            }
+        }*/
 
     } finally {
         deleteDir()
