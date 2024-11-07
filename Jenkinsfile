@@ -9,7 +9,7 @@ def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
 def FILE_NAME = "${ARTIFACT_ID}-${VERSION}-SNAPSHOT.jar"
 def FILE_PATH = "target/${FILE_NAME}"
-def JAR_FILE_PATH = "${env.WORKSPACE}/target/calculator.jar"
+
 node {
     try {
         stage('Initialize') {
@@ -23,7 +23,8 @@ node {
         }
 
         stage('Build with test') {
-            sh "mvn clean package -DskipTests"
+        def JAR_FILE_PATH = "${env.WORKSPACE}/target/calculator.jar"
+            sh "mvn clean package "
             echo "JAR file generated at: ${JAR_FILE_PATH}"
         }
 
