@@ -53,8 +53,9 @@ node {
         }*/
 
         stage('Upload JAR to Nexus') {
-          uploadToNexusJar()
-
+         withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+          uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PATH, VERSION, ENV_NAME)
+            }
         }
 
     } finally {
@@ -83,15 +84,12 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     echo "Image push to Nexus complete"
 }
 
-def uploadToNexusJar() {
-     withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-        sh """
-         set +x
-            curl -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
-            "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ENV_NAME}/${VERSION}/${FILE_NAME}"
-         set -x
-        """
-    }
+def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, FILE_PATH, VERSION, ENV_NAME) {
+
+         sh """
+                 curl -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
+                 "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ENV_NAME}/${VERSION}/${FILE_NAME}"
+             """
 }
 
 def sendEmail(recipients) {
