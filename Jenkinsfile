@@ -37,13 +37,13 @@ node {
             }
         }
 
-        stage("Image Prune") {
+       /* stage("Image Prune") {
             imagePrune(CONTAINER_NAME)
         }
 
         stage('Image Build') {
             imageBuild(CONTAINER_NAME, CONTAINER_TAG)
-        }
+        }*/
 
     /*    stage('Push Docker Image to Nexus') {
             withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
