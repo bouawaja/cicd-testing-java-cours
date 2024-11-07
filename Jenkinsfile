@@ -60,7 +60,7 @@ node {
         }
 
     } finally {
-        deleteDir()
+       // deleteDir()
         //sendEmail(EMAIL_RECIPIENTS);
     }
 }
