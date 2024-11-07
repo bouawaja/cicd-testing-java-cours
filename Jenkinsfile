@@ -25,7 +25,7 @@ node {
             sh "mvn clean install"
         }
         stage('Get Artifact Path') {
-                def JAR_FILE_PATH = "${env.WORKSPACE}/target/${FILE_NAME}"
+          def JAR_FILE_PATH = "${env.WORKSPACE}/target/${FILE_NAME}"
                 echo "Path to JAR file: ${JAR_FILE_PATH}"
             }
         stage('Sonarqube Analysis') {
@@ -56,7 +56,7 @@ node {
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-          uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, JAR_FILE_PATH, VERSION, ENV_NAME)
+          uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, VERSION, ENV_NAME)
             }
         }
 
@@ -86,8 +86,9 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     echo "Image push to Nexus complete"
 }
 
-def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, JAR_FILE_PATH, VERSION, ENV_NAME) {
-
+def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL,FILE_NAME, GROUP_ID, VERSION, ENV_NAME) {
+         def JAR_FILE_PATH = "${env.WORKSPACE}/target/${FILE_NAME}"
+         echo "Path to JAR file: ${JAR_FILE_PATH}"
         sh "curl -v -u $USERNAME:$PASSWORD --upload-file $JAR_FILE_PATH \
         '${NEXUS_URL}/${ENV_NAME}/'"
 
