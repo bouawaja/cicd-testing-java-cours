@@ -4,11 +4,11 @@ def CONTAINER_TAG = getTag(env.BUILD_NUMBER, env.BRANCH_NAME)
 def HTTP_PORT = getHTTPPort(env.BRANCH_NAME)
 def NEXUS_URL = 'http://localhost:8081/repository/maven-releases/'
 def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
-def GROUP_ID = "tech/zerofiltre/testing"
+def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "1.0.0"
 def FILE_NAME = "${ARTIFACT_ID}-${VERSION}.jar"
-def FILE_PATH = "target/${CONTAINER_NAME}"
+def FILE_PATH = "target/${FILE_NAME}"
 
 node {
     try {
@@ -53,8 +53,8 @@ node {
         }*/
 
         stage('Upload JAR to Nexus') {
+          uploadToNexusJar()
 
-            uploadToNexusJar()
         }
 
     } finally {
@@ -84,10 +84,10 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 }
 
 def uploadToNexusJar() {
-    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+     withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
         sh """
-            curl -u $NEXUS_USER:$NEXUS_PASS --upload-file $FILE_PATH \
-            "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ARTIFACT_ID}/${VERSION}/$FILE_NAME"
+            curl -u $USERNAME:$PASSWORD --upload-file $FILE_PATH \
+            "${NEXUS_URL}${GROUP_ID.replace('.', '/')}/${ENV_NAME}/${VERSION}/${FILE_NAME}"
         """
     }
 }
