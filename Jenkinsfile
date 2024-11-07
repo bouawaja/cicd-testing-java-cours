@@ -85,7 +85,7 @@ def pushToImage(containerName, tag, dockerUser, dockerPassword) {
 
 def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     sh "docker tag $containerName:$tag $nexusUrl/$containerName:$tag"
-    sh "docker login -u $nexusUser -p $nexusPassword"
+    sh "docker login localhost:5000  -u $nexusUser -p $nexusPassword"
     sh "docker push $nexusUrl/$containerName:$tag"
     echo "Image push complete"
 }
