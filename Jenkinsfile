@@ -49,7 +49,7 @@ node {
                 cp ${JAR_FILE_PATH} target/package/calculator-${DATE_TIME}
                 cp entrypoint.sh target/package/calculator-${DATE_TIME}
                 cp Dockerfile target/package/calculator-${DATE_TIME}
-                tar -czf ${TAR_FILE_PATH} -C target/package/calculator-${DATE_TIME} .
+                tar -czf ${TAR_FILE_PATH} -C target/package/calculator-${DATE_TIME}
             """
             echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
         }
