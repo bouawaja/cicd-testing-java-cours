@@ -61,9 +61,9 @@ node {
         }
 
     } finally {
-     echo 'Waiting 3 minutes before deleting the package...'
-      sleep(time: 3, unit: 'MINUTES') // Temps d'attente de 3 minutes
-        deleteDir()
+    // echo 'Waiting 3 minutes before deleting the package...'
+    //  sleep(time: 3, unit: 'MINUTES') // Temps d'attente de 3 minutes
+    //    deleteDir()
         //sendEmail(EMAIL_RECIPIENTS);
     }
 }
