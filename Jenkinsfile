@@ -24,8 +24,8 @@ node {
         }
 
         stage('Build with test') {
-            sh "mvn clean package "
-            echo "JAR file generated at: ${pwd()}/${JAR_FILE_PATH}"
+            sh "mvn clean package -DoutputFileName=${$JAR_FILE_PATH}"
+            echo "JAR file generated at: ${pwd()}/${$JAR_FILE_PATH}"
         }
 
         stage('Sonarqube Analysis') {
@@ -61,6 +61,8 @@ node {
         }
 
     } finally {
+     echo 'Waiting 3 minutes before deleting the package...'
+      sleep(time: 3, unit: 'MINUTES') // Temps d'attente de 3 minutes
         deleteDir()
         //sendEmail(EMAIL_RECIPIENTS);
     }
