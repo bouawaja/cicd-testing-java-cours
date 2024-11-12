@@ -8,8 +8,8 @@ def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
 def DATE_FORMAT = new Date().format("yyyyMMdd_HHmmss")
-def FILE_NAME = "${ARTIFACT_ID}-${DATE_FORMAT}.jar"
-def JAR_FILE_PATH = "target/${FILE_NAME}"
+def FILE_NAME = "${ARTIFACT_ID}"
+def JAR_FILE_PATH = "target/${FILE_NAME}.jar"
 
 node {
     try {
@@ -24,7 +24,7 @@ node {
         }
 
         stage('Build with test') {
-            sh "mvn clean package -DoutputFileName=${FILE_NAME}"
+            sh "mvn clean package"
             echo "JAR file generated at: ${pwd()}/${JAR_FILE_PATH}"
         }
 
@@ -90,7 +90,7 @@ def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME) {
 
         echo "Path to JAR file: ${pwd()}/$JAR_FILE_PATH"
         sh "curl -v -u $USERNAME:$PASSWORD --upload-file ${pwd()}/$JAR_FILE_PATH \
-        '${NEXUS_URL}/${ARTIFACT_ID}/${ENV_NAME}/'"
+        '${NEXUS_URL}/${ARTIFACT_ID}/${ENV_NAME}/${FILE_NAME}-${DATE_FORMAT}.jar'"
 
 }
 
