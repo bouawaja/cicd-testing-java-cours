@@ -55,7 +55,7 @@ node {
 
         stage('Upload JAR to Nexus') {
          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-         uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME)
+         uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME, ARTIFACT_ID)
             }
         }
 
@@ -85,7 +85,7 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
     echo "Image push to Nexus complete"
 }
 
-def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME) {
+def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME, ARTIFACT_ID) {
 
         echo "Path to JAR file: ${pwd()}/$JAR_FILE_PATH"
         sh "curl -v -u $USERNAME:$PASSWORD --upload-file ${pwd()}/$JAR_FILE_PATH \
