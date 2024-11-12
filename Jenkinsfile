@@ -8,6 +8,8 @@ def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
 def JAR_FILE_PATH = "target/${ARTIFACT_ID}.jar"
+def TAR_FILE_NAME = "${ARTIFACT_ID}-${VERSION}.tar.gz"
+def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
 
 node {
     try {
@@ -25,7 +27,6 @@ node {
             sh "mvn clean package"
             echo "JAR file generated at: ${pwd()}/${JAR_FILE_PATH}"
         }
-
         stage('Sonarqube Analysis') {
             withSonarQubeEnv('SonarQubeLocalServer') {
                 sh "mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
@@ -38,30 +39,50 @@ node {
             }
         }
 
-       /* stage("Image Prune") {
-            imagePrune(CONTAINER_NAME)
+
+        stage('Create TAR package') {
+            echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
+            sh """
+                mkdir -p target/package
+                cp ${JAR_FILE_PATH} target/package/
+                cp entrypoint.sh target/package/
+                cp Dockerfile target/package/
+                tar -czf ${TAR_FILE_PATH} -C target/package .
+            """
+            echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
         }
 
-        stage('Image Build') {
-            imageBuild(CONTAINER_NAME, CONTAINER_TAG)
-        }*/
-
-    /*    stage('Push Docker Image to Nexus') {
+        stage('Upload TAR to Nexus') {
             withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                pushToImageToNexus(CONTAINER_NAME, CONTAINER_TAG, USERNAME, PASSWORD, NEXUSURL)
-            }
-        }*/
-
-        stage('Upload JAR to Nexus') {
-         withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-         uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME, ARTIFACT_ID)
+                uploadToNexusTar(USERNAME, PASSWORD, NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ARTIFACT_ID)
             }
         }
+
+        /* Optional: Uncomment if Docker image build and push is needed
+        stage("Image Build and Push") {
+            imageBuild(CONTAINER_NAME, CONTAINER_TAG)
+            pushToImageToNexus(CONTAINER_NAME, CONTAINER_TAG, NEXUS_URL, USERNAME, PASSWORD)
+        }
+        */
 
     } finally {
-    //    deleteDir()
-        //sendEmail(EMAIL_RECIPIENTS);
+        // Cleanup and notifications
+        // deleteDir()
+        // sendEmail(EMAIL_RECIPIENTS)
     }
+}
+
+def uploadToNexusTar(USERNAME, PASSWORD, NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ARTIFACT_ID) {
+    def DATE_FORMAT = new Date().format("yyyyMMdd_HHmmss")
+    def FILE_NAME = "${ARTIFACT_ID}-${DATE_FORMAT}.tar.gz"
+    def FULL_PATH = "${pwd()}/$TAR_FILE_PATH"
+
+    echo "Uploading TAR package: ${FULL_PATH} as ${FILE_NAME} to Nexus..."
+
+    sh """
+        curl -v -u $USERNAME:$PASSWORD --upload-file ${FULL_PATH} \
+        '${NEXUS_URL}/${ARTIFACT_ID}/${ENV_NAME}/${FILE_NAME}'
+    """
 }
 
 def imagePrune(containerName) {
@@ -69,6 +90,7 @@ def imagePrune(containerName) {
         sh "docker image prune -f"
         sh "docker stop $containerName"
     } catch (ignored) {
+        echo 'No existing container to remove.'
     }
 }
 
@@ -77,26 +99,12 @@ def imageBuild(containerName, tag) {
     echo "Image build complete"
 }
 
-def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
+def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
     sh "docker tag $containerName:$tag $nexusUrl/$containerName:$tag"
     sh "docker login localhost:5000 -u $nexusUser -p $nexusPassword"
     sh "docker push $nexusUrl/$containerName:$tag"
     echo "Image push to Nexus complete"
 }
-
-def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME, ARTIFACT_ID) {
-    def DATE_FORMAT = new Date().format("yyyyMMdd_HHmmss")
-    def FILE_NAME = "${ARTIFACT_ID}-${DATE_FORMAT}.jar"
-    def FULL_PATH = "${pwd()}/$JAR_FILE_PATH"
-
-    echo "Uploading JAR file: ${FULL_PATH} as ${FILE_NAME} to Nexus..."
-
-    sh """
-        curl -v -u $USERNAME:$PASSWORD --upload-file ${FULL_PATH} \
-        '${NEXUS_URL}/${ARTIFACT_ID}/${ENV_NAME}/${FILE_NAME}'
-    """
-}
-
 
 def sendEmail(recipients) {
     mail(
