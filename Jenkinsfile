@@ -14,9 +14,7 @@ def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
 node {
     try {
         stage('Initialize') {
-            def dockerHome = tool 'DockerLatest'
-            def mavenHome = tool 'MavenLatest'
-            env.PATH = "${dockerHome}/bin:${mavenHome}/bin:${env.PATH}"
+            initializeTools()
         }
 
         stage('Checkout') {
@@ -24,38 +22,19 @@ node {
         }
 
         stage('Build with test') {
-            sh "mvn clean package"
-            echo "JAR file generated at: ${pwd()}/${JAR_FILE_PATH}"
-        }
-        stage('Sonarqube Analysis') {
-            withSonarQubeEnv('SonarQubeLocalServer') {
-                sh "mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
-            }
-            timeout(time: 1, unit: 'MINUTES') {
-                def qg = waitForQualityGate()
-                if (qg.status != 'OK') {
-                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                }
-            }
+            buildPackage()
         }
 
+        stage('Sonarqube Analysis') {
+            sonarqubeAnalysis()
+        }
 
         stage('Create TAR package') {
-            echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
-            sh """
-                mkdir -p target/package
-                cp ${JAR_FILE_PATH} target/package/
-                cp entrypoint.sh target/package/
-                cp Dockerfile target/package/
-                tar -czf ${TAR_FILE_PATH} -C target/package .
-            """
-            echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
+            createTarPackage()
         }
 
         stage('Upload TAR to Nexus') {
-            withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                uploadToNexusTar(USERNAME, PASSWORD, NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ARTIFACT_ID)
-            }
+            uploadToNexusTar(NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ARTIFACT_ID)
         }
 
         /* Optional: Uncomment if Docker image build and push is needed
@@ -72,7 +51,50 @@ node {
     }
 }
 
-def uploadToNexusTar(USERNAME, PASSWORD, NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ARTIFACT_ID) {
+// Initialize tools like Docker and Maven
+def initializeTools() {
+    def dockerHome = tool 'DockerLatest'
+    def mavenHome = tool 'MavenLatest'
+    env.PATH = "${dockerHome}/bin:${mavenHome}/bin:${env.PATH}"
+}
+
+// Build project with tests
+def buildPackage() {
+    sh "mvn clean package"
+    echo "JAR file generated at: ${pwd()}/${JAR_FILE_PATH}"
+}
+
+// SonarQube analysis for the project
+def sonarqubeAnalysis() {
+    withSonarQubeEnv('SonarQubeLocalServer') {
+        sh "mvn sonar:sonar -Dintegration-tests.skip=true -Dmaven.test.failure.ignore=true"
+    }
+    timeout(time: 1, unit: 'MINUTES') {
+        def qg = waitForQualityGate()
+        if (qg.status != 'OK') {
+            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+        }
+    }
+}
+
+// Create TAR package with JAR, entrypoint.sh, and Dockerfile
+def createTarPackage() {
+    echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
+    def timestamp = new Date().format("yyyyMMdd_HHmmss")
+    def tarDir = "calculator-${timestamp}" // This will be the inner folder name
+
+    sh """
+        mkdir -p ${tarDir}
+        cp target/calculator-*.jar ${tarDir}/
+        cp Dockerfile ${tarDir}/
+        cp entrypoint.sh ${tarDir}/
+        tar -czf ${TAR_FILE_NAME} -C ${tarDir} .
+        echo "Tar package created: ${TAR_FILE_NAME}"
+    """
+}
+
+// Upload the TAR package to Nexus
+def uploadToNexusTar(NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ARTIFACT_ID) {
     def DATE_FORMAT = new Date().format("yyyyMMdd_HHmmss")
     def FILE_NAME = "${ARTIFACT_ID}-${DATE_FORMAT}.tar.gz"
     def FULL_PATH = "${pwd()}/$TAR_FILE_PATH"
@@ -85,51 +107,15 @@ def uploadToNexusTar(USERNAME, PASSWORD, NEXUS_URL, TAR_FILE_PATH, ENV_NAME, ART
     """
 }
 
-def imagePrune(containerName) {
-    try {
-        sh "docker image prune -f"
-        sh "docker stop $containerName"
-    } catch (ignored) {
-        echo 'No existing container to remove.'
-    }
-}
-
-def imageBuild(containerName, tag) {
-    sh "docker build -t $containerName:$tag --pull --no-cache ."
-    echo "Image build complete"
-}
-
-def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
-    sh "docker tag $containerName:$tag $nexusUrl/$containerName:$tag"
-    sh "docker login localhost:5000 -u $nexusUser -p $nexusPassword"
-    sh "docker push $nexusUrl/$containerName:$tag"
-    echo "Image push to Nexus complete"
-}
-
-def sendEmail(recipients) {
-    mail(
-            to: recipients,
-            subject: "Build ${env.BUILD_NUMBER} - ${currentBuild.currentResult} - (${currentBuild.fullDisplayName})",
-            body: "Check console output at: ${env.BUILD_URL}/console" + "\n")
-}
-
+// Helper functions to get values based on the branch name
 String getEnvName(String branchName) {
-    if (branchName == 'master') {
-        return 'prod'
-    }
-    return (branchName == 'develop') ? 'preprod' : 'dev'
+    return branchName == 'master' ? 'prod' : (branchName == 'develop' ? 'preprod' : 'dev')
 }
 
 String getHTTPPort(String branchName) {
-    if (branchName == 'master') {
-        return '9003'
-    }
-    return (branchName == 'develop') ? '9002' : '9001'
+    return branchName == 'master' ? '9003' : (branchName == 'develop' ? '9002' : '9001')
 }
 
 String getTag(String buildNumber, String branchName) {
-    if (branchName == 'master') {
-        return buildNumber + '-unstable'
-    }
-    return buildNumber + '-stable'
+    return branchName == 'master' ? "${buildNumber}-unstable" : "${buildNumber}-stable"
 }
