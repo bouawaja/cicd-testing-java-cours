@@ -7,7 +7,6 @@ def EMAIL_RECIPIENTS = "drivexpresse@gmail.com"
 def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
-def DATE_FORMAT = new Date().format("yyyyMMdd_HHmmss")
 def JAR_FILE_PATH = "target/${ARTIFACT_ID}.jar"
 
 node {
@@ -86,11 +85,16 @@ def pushToImageToNexus(containerName, tag, nexusUser, nexusPassword, nexusUrl) {
 }
 
 def uploadToNexusJar(USERNAME, PASSWORD, NEXUS_URL, JAR_FILE_PATH, ENV_NAME, ARTIFACT_ID) {
+    def DATE_FORMAT = new Date().format("yyyyMMdd_HHmmss")
+    def FILE_NAME = "${ARTIFACT_ID}-${DATE_FORMAT}.jar"
+    def FULL_PATH = "${pwd()}/$JAR_FILE_PATH"
 
-        echo "Path to JAR file: ${pwd()}/$JAR_FILE_PATH"
-        sh "curl -v -u $USERNAME:$PASSWORD --upload-file ${pwd()}/$JAR_FILE_PATH \
-        '${NEXUS_URL}/${ARTIFACT_ID}/${ENV_NAME}/${ARTIFACT_ID}-${DATE_FORMAT}.jar'"
+    echo "Uploading JAR file: ${FULL_PATH} as ${FILE_NAME} to Nexus..."
 
+    sh """
+        curl -v -u $USERNAME:$PASSWORD --upload-file ${FULL_PATH} \
+        '${NEXUS_URL}/${ARTIFACT_ID}/${ENV_NAME}/${FILE_NAME}'
+    """
 }
 
 
