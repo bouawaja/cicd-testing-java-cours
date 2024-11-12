@@ -10,6 +10,7 @@ def VERSION = "0.0.1"
 def JAR_FILE_PATH = "target/${ARTIFACT_ID}.jar"
 def TAR_FILE_NAME = "${ARTIFACT_ID}-${VERSION}.tar.gz"
 def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
+def DATE_TIME = new Date().format("yyyyMMdd_HHmmss")
 
 node {
     try {
@@ -41,8 +42,16 @@ node {
 
 
         stage('Create TAR package') {
-           echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
-           createTarPackage()
+
+            echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
+            sh """
+                mkdir -p target/package/calculator-${DATE_TIME}
+                cp ${JAR_FILE_PATH} target/package/calculator-${DATE_TIME}
+                cp entrypoint.sh target/package/calculator-${DATE_TIME}
+                cp Dockerfile target/package/calculator-${DATE_TIME}
+                tar -czf ${TAR_FILE_PATH} -C target/package/calculator-${DATE_TIME} .
+            """
+            echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
         }
 
         stage('Upload TAR to Nexus') {
@@ -60,7 +69,7 @@ node {
 
     } finally {
         // Cleanup and notifications
-        // deleteDir()
+       deleteDir()
         // sendEmail(EMAIL_RECIPIENTS)
     }
 }
@@ -92,27 +101,18 @@ def imageBuild(containerName, tag) {
     echo "Image build complete"
 }
 
+def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
+    sh "docker tag $containerName:$tag $nexusUrl/$containerName:$tag"
+    sh "docker login localhost:5000 -u $nexusUser -p $nexusPassword"
+    sh "docker push $nexusUrl/$containerName:$tag"
+    echo "Image push to Nexus complete"
+}
+
 def sendEmail(recipients) {
     mail(
             to: recipients,
             subject: "Build ${env.BUILD_NUMBER} - ${currentBuild.currentResult} - (${currentBuild.fullDisplayName})",
             body: "Check console output at: ${env.BUILD_URL}/console" + "\n")
-}
-// Refactored function to create the TAR package
-def createTarPackage() {
-    echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
-    def timestamp = new Date().format("yyyyMMdd_HHmmss")
-    def tarDir = "calculator-${timestamp}" // This will be the inner folder name
-
-    // Creating the tar file with the structure as: calculator-20241112_153920.tar.gz/calculator-20241112_153920.tar/calculator-20241112_153920/
-    sh """
-        mkdir -p ${tarDir}
-        cp target/calculator-*.jar ${tarDir}/  // Assuming the .jar file is generated in target/
-        cp Dockerfile ${tarDir}/
-        cp entrypoint.sh ${tarDir}/
-        tar -czf calculator-${timestamp}.tar.gz -C ${tarDir} .
-        echo "Tar package created: calculator-${timestamp}.tar.gz"
-    """
 }
 
 String getEnvName(String branchName) {
