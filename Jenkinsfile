@@ -8,9 +8,9 @@ def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
 def JAR_FILE_PATH = "target/${ARTIFACT_ID}.jar"
-def TAR_FILE_NAME = "${ARTIFACT_ID}-${VERSION}.tar.gz"
 def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
 def DATE_TIME = new Date().format("yyyyMMdd_HHmmss")
+def TAR_FILE_NAME = "${ARTIFACT_ID}-${DATE_TIME}.tar.gz"
 
 node {
     try {
@@ -106,7 +106,7 @@ def createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH, ENV_NAME){
                 cp ${JAR_FILE_PATH} package/calculator-${ENV_NAME}/target
                 cp entrypoint.sh package/calculator-${ENV_NAME}
                 cp Dockerfile package/calculator-${ENV_NAME}
-                tar -czf ${TAR_FILE_PATH} -C package calculator-${DATE_TIME}
+                tar -czf ${TAR_FILE_PATH} -C package calculator-preprod
             """
             echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
 
