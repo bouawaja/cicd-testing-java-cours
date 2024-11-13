@@ -42,16 +42,7 @@ node {
 
 
         stage('Create TAR package') {
-
-            echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
-            sh """
-                mkdir -p target/package/calculator-${DATE_TIME}
-                cp ${JAR_FILE_PATH} target/package/calculator-${DATE_TIME}
-                cp entrypoint.sh target/package/calculator-${DATE_TIME}
-                cp Dockerfile target/package/calculator-${DATE_TIME}
-                tar -czf ${TAR_FILE_PATH} -C target/package/calculator-${DATE_TIME}
-            """
-            echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
+            createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH)
         }
 
         stage('Upload TAR to Nexus') {
@@ -106,6 +97,19 @@ def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
     sh "docker login localhost:5000 -u $nexusUser -p $nexusPassword"
     sh "docker push $nexusUrl/$containerName:$tag"
     echo "Image push to Nexus complete"
+}
+
+def createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH ){
+ echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
+            sh """
+                mkdir -p target/package/calculator-${DATE_TIME}
+                cp ${JAR_FILE_PATH} target/package/calculator-${DATE_TIME}
+                cp entrypoint.sh target/package/calculator-${DATE_TIME}
+                cp Dockerfile target/package/calculator-${DATE_TIME}
+                tar -czf ${TAR_FILE_PATH} -C target/package calculator-${DATE_TIME}
+            """
+            echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
+
 }
 
 def sendEmail(recipients) {
