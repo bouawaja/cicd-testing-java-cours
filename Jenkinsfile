@@ -10,7 +10,7 @@ def VERSION = "0.0.1"
 def JAR_FILE_PATH = "target/${ARTIFACT_ID}.jar"
 def TAR_FILE_NAME = "${ARTIFACT_ID}-${VERSION}.tar.gz"
 def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
-def DATE_TIME = new Date().format("yyyyMMdd_HHmm")
+def DATE_TIME = new Date().format("yyyyMMdd_HHmmss")
 
 node {
     try {
@@ -102,10 +102,10 @@ def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
 def createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH ){
  echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
             sh """
-                mkdir -p package/calculator-${DATE_TIME}/target
-                cp ${JAR_FILE_PATH} package/calculator-${DATE_TIME}/target
-                cp entrypoint.sh package/calculator-${DATE_TIME}
-                cp Dockerfile package/calculator-${DATE_TIME}
+                mkdir -p package/calculator-${ENV_NAME}/target
+                cp ${JAR_FILE_PATH} package/calculator-${ENV_NAME}/target
+                cp entrypoint.sh package/calculator-${ENV_NAME}
+                cp Dockerfile package/calculator-${ENV_NAME}
                 tar -czf ${TAR_FILE_PATH} -C package calculator-${DATE_TIME}
             """
             echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
