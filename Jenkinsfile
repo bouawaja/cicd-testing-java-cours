@@ -8,9 +8,10 @@ def GROUP_ID = "tech.zerofiltre.testing"
 def ARTIFACT_ID = "calculator"
 def VERSION = "0.0.1"
 def JAR_FILE_PATH = "target/${ARTIFACT_ID}.jar"
-def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
 def DATE_TIME = new Date().format("yyyyMMdd_HHmmss")
 def TAR_FILE_NAME = "${ARTIFACT_ID}-${DATE_TIME}.tar.gz"
+def TAR_FILE_PATH = "target/${TAR_FILE_NAME}"
+
 
 node {
     try {
