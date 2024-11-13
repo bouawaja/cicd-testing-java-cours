@@ -42,7 +42,7 @@ node {
 
 
         stage('Create TAR package') {
-            createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH)
+            createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH, ENV_NAME)
         }
 
         stage('Upload TAR to Nexus') {
@@ -99,7 +99,7 @@ def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
     echo "Image push to Nexus complete"
 }
 
-def createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH ){
+def createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH, ENV_NAME){
  echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
             sh """
                 mkdir -p package/calculator-${ENV_NAME}/target
