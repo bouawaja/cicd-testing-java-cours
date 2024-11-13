@@ -102,11 +102,11 @@ def pushToImageToNexus(containerName, tag, nexusUrl, nexusUser, nexusPassword) {
 def createPackage(DATE_TIME, TAR_FILE_PATH, JAR_FILE_PATH ){
  echo "Creating TAR package with JAR, entrypoint.sh, and Dockerfile"
             sh """
-                mkdir -p target/package/calculator-${DATE_TIME}
-                cp ${JAR_FILE_PATH} target/package/calculator-${DATE_TIME}
-                cp entrypoint.sh target/package/calculator-${DATE_TIME}
-                cp Dockerfile target/package/calculator-${DATE_TIME}
-                tar -czf ${TAR_FILE_PATH} -C target/package calculator-${DATE_TIME}
+                mkdir -p package/calculator-${DATE_TIME}/target
+                cp ${JAR_FILE_PATH} package/calculator-${DATE_TIME}/target
+                cp entrypoint.sh package/calculator-${DATE_TIME}
+                cp Dockerfile package/calculator-${DATE_TIME}
+                tar -czf ${TAR_FILE_PATH} -C package calculator-${DATE_TIME}
             """
             echo "TAR package created at: ${pwd()}/${TAR_FILE_PATH}"
 
